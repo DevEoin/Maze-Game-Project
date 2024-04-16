@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -58,6 +59,9 @@ public class PlayerManager : MonoBehaviour
 
     // Freezing variables
     private float freezeDuration = 3f;
+
+    //Snowball throw 
+    public GameObject snowballPrefab;
 
     private void Awake()
     {
@@ -176,6 +180,9 @@ public class PlayerManager : MonoBehaviour
                         Rewind();
                         break;
 
+                    case 6:
+                        ThrowSnowball();
+                        break;
                     default:
                         Debug.Log("powerSelect drew a value that does not have a corresponsing power-up");
                         break;
@@ -190,7 +197,8 @@ public class PlayerManager : MonoBehaviour
      */
     private int EnablePowerUp(){
 
-        int[] powersDistribution = { 1, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 4, 5 };
+        //int[] powersDistribution = { 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 4, 5, 6, 6, 6, 6 };
+        int[] powersDistribution = { 6, 6, 6, 6, 6, 6, 6, 6 };
         int localPowerSelect = UnityEngine.Random.Range(0, powersDistribution.Length);
         powerSelect = powersDistribution[localPowerSelect];
 
@@ -403,7 +411,30 @@ public class PlayerManager : MonoBehaviour
     }
 
 
+    private void ThrowSnowball() 
+    {
+        GameObject snowball;
+        GameObject closestPlayer = null;
+        float closestDistance = Mathf.Infinity;
+        Vector3 currentPosition = transform.position;
 
+        foreach(GameObject player in otherPlayers)
+        {
+            float distance = Vector3.Distance(currentPosition, player.transform.position);
+            if (distance < closestDistance){
+                closestDistance = distance;
+                closestPlayer = player;
+            }
+        }
+        snowball = Instantiate(snowballPrefab, transform.position, Quaternion.identity);
+        snowball.GetComponent<SnowballMotion>().TravelTowards(closestPlayer.transform.position);
+
+        hasPowerUp = false;
+        keepingPowerUp = false;
+        usingPowerUp = false;
+        counter = 5;
+
+    }
 
 
     private void SetPowerDurationTimer(float time)
